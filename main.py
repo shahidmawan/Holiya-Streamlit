@@ -121,7 +121,7 @@ if not st.session_state.current_session_id:
     st.info("Create or select a chat session from the sidebar.")
     st.stop()
 
-st.caption(f"Session ID: {st.session_state.current_session_id}")
+st.caption(f"Session ID: `{st.session_state.current_session_id}`")
 
 st.markdown("<div class='chat-container'>", unsafe_allow_html=True)
 
@@ -132,7 +132,7 @@ for msg in st.session_state.messages:
         unsafe_allow_html=True
     )
     st.markdown(
-        f"<div class='ai-msg'><b>AI:</b> {msg.get('ai_response', '')}</div>",
+        f"<div class='ai-msg'><b>Holiya AI:</b> {msg.get('ai_response', '')}</div>",
         unsafe_allow_html=True
     )
 
@@ -148,7 +148,7 @@ with st.form(key="chat_form", clear_on_submit=True):
 
 if send_btn and user_input.strip():
     # Optional: show spinner for better UX
-    with st.spinner("AI is thinking..."):
+    with st.spinner("Holiya Agent is thinking..."):
         ai_response = send_message(
             st.session_state.current_session_id,
             user_input
