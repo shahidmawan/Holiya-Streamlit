@@ -2,6 +2,35 @@ import streamlit as st
 import requests
 import uuid
 
+
+
+
+# -----------------------------
+# PASSWORD PROTECTION
+# -----------------------------
+PASSWORD = "HoliyaAI"
+
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+
+if not st.session_state.authenticated:
+    st.title("🔐 Access Required")
+
+    password_input = st.text_input(
+        "Enter password",
+        type="password"
+    )
+
+    if password_input == PASSWORD:
+        st.session_state.authenticated = True
+        st.success("Access granted ✅")
+        st.rerun()
+    elif password_input:
+        st.error("Incorrect password ❌")
+
+    st.stop()
+
+
 # -----------------------------
 # CONFIG
 # -----------------------------
