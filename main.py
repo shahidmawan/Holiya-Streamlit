@@ -1,35 +1,26 @@
 import streamlit as st
 import requests
 import uuid
-
-
-
+import re
 
 # -----------------------------
 # PASSWORD PROTECTION
 # -----------------------------
-PASSWORD = "HoliyaAI"
+PASSWORD = "holiyaAI572"
 
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 
 if not st.session_state.authenticated:
     st.title("🔐 Access Required")
-
-    password_input = st.text_input(
-        "Enter password",
-        type="password"
-    )
-
+    password_input = st.text_input("Enter password", type="password")
     if password_input == PASSWORD:
         st.session_state.authenticated = True
         st.success("Access granted ✅")
         st.rerun()
     elif password_input:
         st.error("Incorrect password ❌")
-
     st.stop()
-
 
 # -----------------------------
 # CONFIG
@@ -45,49 +36,155 @@ st.set_page_config(
 )
 
 # -----------------------------
-# STYLES
+# HOLIYA THEME (TEXT COLOR FOCUSED)
 # -----------------------------
 st.markdown("""
 <style>
-.user-msg {
-    background-color: #DCF8C6;
-    padding: 10px 14px;
-    border-radius: 10px;
-    margin-bottom: 8px;
-    max-width: 70%;
+
+/* ---------- APP BACKGROUND ---------- */
+.main, .stApp {
+    background-color: #F7F3EF;     /* warm beige */
+    color: #5F5A54;                /* default body text */
+    font-family: 'Inter', sans-serif;
 }
-.ai-msg {
-    background-color: #F1F1F1;
-    padding: 10px 14px;
-    border-radius: 10px;
-    margin-bottom: 12px;
-    max-width: 70%;
+
+/* ---------- SIDEBAR ---------- */
+section[data-testid="stSidebar"] {
+    background-color: #EFE9E4;
+    color: #3E3A37;
 }
-.chat-container {
-    display: flex;
-    flex-direction: column;
+
+/* ---------- USER MESSAGE ---------- */
+.user-message {
+    background-color: #E7EFEA;
+    padding: 16px 20px;
+    border-radius: 18px;
+    margin: 14px 0;
+    border-left: 5px solid #8A9A5B;
+    color: #D1AB88;
 }
+
+/* ---------- AI MESSAGE ---------- */
+.ai-message {
+    background-color: #FFFFFF;
+    padding: 22px;
+    border-radius: 18px;
+    margin: 14px 0;
+    border-left: 5px solid #8A9A5B;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    color: #AE7C49;
+}
+
+/* ---------- TEXT HIERARCHY ---------- */
+.ai-message h1 {
+    color: #3B3A36;                /* strong heading */
+    font-size: 34px;
+    font-weight: 800;
+    margin-bottom: 14px;
+}
+
+.ai-message h2 {
+    color: #4A4A45;
+    font-weight: 700;
+}
+
+.ai-message h3 {
+    color: #4A4A45;
+    font-weight: 600;
+}
+
+.ai-message p {
+    color: #5F5A54;                /* soft paragraph */
+    font-size: 16px;
+    line-height: 1.75;
+}
+
+.ai-message ul,
+.ai-message ol {
+    padding-left: 20px;
+}
+
+.ai-message li {
+    color: #5F5A54;
+    line-height: 1.7;
+}
+
+/* Emphasis */
+.ai-message strong {
+    color: #2F2E2B;
+}
+
+/* ---------- OPTIONAL BLOCKS ---------- */
+.block-info {
+    background-color: #EEF3F6;
+    border-left: 4px solid #A3B6C4;
+    color: #5F5A54;
+}
+
+.block-success {
+    background-color: #E4EFE6;
+    border-left: 4px solid #8A9A5B;
+    color: #5F5A54;
+}
+
+.block-warning {
+    background-color: #F8EEE6;
+    border-left: 4px solid #C8A27A;
+    color: #5F5A54;
+}
+
+.block-danger {
+    background-color: #F6E6E6;
+    border-left: 4px solid #C28B8B;
+    color: #5F5A54;
+}
+
 </style>
 """, unsafe_allow_html=True)
+
+# -----------------------------
+# MARKDOWN → HTML (UNCHANGED)
+# -----------------------------
+def is_html(text):
+    return bool(re.search(r'<[^>]+>', text))
+
+def markdown_to_html(text):
+    if not text:
+        return ""
+
+    # Headers
+    text = re.sub(r'^### (.+)$', r'<h3>\1</h3>', text, flags=re.MULTILINE)
+    text = re.sub(r'^## (.+)$', r'<h2>\1</h2>', text, flags=re.MULTILINE)
+    text = re.sub(r'^# (.+)$', r'<h1>\1</h1>', text, flags=re.MULTILINE)
+
+    # Bold & italic
+    text = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', text)
+    text = re.sub(r'\*(.+?)\*', r'<em>\1</em>', text)
+
+    # Line breaks
+    return text.replace("\n", "<br>")
+
+def render_message(text):
+    return text if is_html(text) else markdown_to_html(text)
 
 # -----------------------------
 # API FUNCTIONS
 # -----------------------------
 def get_sessions():
     try:
-        url = f"{BASE_URL}/get-sessions?user_id={USER_ID}"
-        return requests.get(url).json().get("data", [])
-    except Exception:
+        return requests.get(
+            f"{BASE_URL}/get-sessions?user_id={USER_ID}"
+        ).json().get("data", [])
+    except:
         return []
-
 
 def get_messages(chat_session_id):
     try:
-        url = f"{BASE_URL}/get-messages?chat_session_id={chat_session_id}"
-        return requests.get(url).json().get("data", [])
-    except Exception:
+        return requests.get(
+            f"{BASE_URL}/get-messages?chat_session_id={chat_session_id}"
+        ).json().get("data", [])
+    except:
         return []
-
 
 def send_message(session_id, user_message):
     payload = {
@@ -98,17 +195,14 @@ def send_message(session_id, user_message):
     try:
         r = requests.post(f"{BASE_URL}/ai-agent", json=payload)
         return r.json()["data"]["ai_response"]
-    except Exception:
+    except:
         return "⚠️ Unable to reach AI service."
 
 # -----------------------------
-# SESSION STATE INIT
+# SESSION STATE
 # -----------------------------
 if "current_session_id" not in st.session_state:
     st.session_state.current_session_id = None
-
-if "current_chat_db_id" not in st.session_state:
-    st.session_state.current_chat_db_id = None
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -117,28 +211,16 @@ if "messages" not in st.session_state:
 # SIDEBAR
 # -----------------------------
 st.sidebar.title("💬 Holiya Medical AI")
-st.sidebar.subheader("Chat Sessions")
 
-# Start New Session
 if st.sidebar.button("➕ Start New Session"):
     st.session_state.current_session_id = str(uuid.uuid4())
-    st.session_state.current_chat_db_id = None
     st.session_state.messages = []
     st.rerun()
 
-# Existing Sessions
-sessions = get_sessions()
-
-for s in sessions:
-    db_id = s["chat_session_id"]
-    session_uuid = s["session_id"]
-
-    label = f"Session {db_id} — {session_uuid[:8]}"
-
-    if st.sidebar.button(label, key=db_id):
-        st.session_state.current_session_id = session_uuid
-        st.session_state.current_chat_db_id = db_id
-        st.session_state.messages = get_messages(db_id)
+for s in get_sessions():
+    if st.sidebar.button(f"Session {s['chat_session_id']}"):
+        st.session_state.current_session_id = s["session_id"]
+        st.session_state.messages = get_messages(s["chat_session_id"])
         st.rerun()
 
 # -----------------------------
@@ -147,45 +229,41 @@ for s in sessions:
 st.title("🩺 Holiya Medical AI Agent")
 
 if not st.session_state.current_session_id:
-    st.info("Create or select a chat session from the sidebar.")
+    st.info("Create or select a chat session.")
     st.stop()
 
 st.caption(f"Session ID: `{st.session_state.current_session_id}`")
+st.divider()
 
-st.markdown("<div class='chat-container'>", unsafe_allow_html=True)
-
-# Display Messages
 for msg in st.session_state.messages:
     st.markdown(
-        f"<div class='user-msg'><b>You:</b> {msg['user_message']}</div>",
-        unsafe_allow_html=True
-    )
-    st.markdown(
-        f"<div class='ai-msg'><b>Holiya AI:</b> {msg.get('ai_response', '')}</div>",
+        f"<div class='user-message'><strong>You:</strong> {msg['user_message']}</div>",
         unsafe_allow_html=True
     )
 
-st.markdown("</div>", unsafe_allow_html=True)
+    ai_html = render_message(msg["ai_response"])
+    st.markdown(
+        f"<div class='ai-message'><strong>Holiya AI:</strong><br>{ai_html}</div>",
+        unsafe_allow_html=True
+    )
+
 st.divider()
 
 # -----------------------------
-# MESSAGE INPUT (SAFE)
+# INPUT
 # -----------------------------
-with st.form(key="chat_form", clear_on_submit=True):
+with st.form("chat_form", clear_on_submit=True):
     user_input = st.text_input("Write your message")
-    send_btn = st.form_submit_button("Send")
+    submitted = st.form_submit_button("Send")
 
-if send_btn and user_input.strip():
-    # Optional: show spinner for better UX
-    with st.spinner("Holiya Agent is thinking..."):
+if submitted and user_input.strip():
+    with st.spinner("Holiya is thinking..."):
         ai_response = send_message(
             st.session_state.current_session_id,
             user_input
         )
-
-    st.session_state.messages.append({
-        "user_message": user_input,
-        "ai_response": ai_response
-    })
-
-    st.rerun()
+        st.session_state.messages.append({
+            "user_message": user_input,
+            "ai_response": ai_response
+        })
+        st.rerun()
