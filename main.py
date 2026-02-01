@@ -25,7 +25,7 @@ if not st.session_state.authenticated:
 # -----------------------------
 # CONFIG
 # -----------------------------
-BASE_URL = "http://13.61.194.44/api/chatbot"
+BASE_URL = "https://holiya-be.holiya.co.uk/api/chatbot"
 USER_ID = 35
 
 st.set_page_config(
